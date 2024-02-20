@@ -1,46 +1,48 @@
 import * as React from "react";
-import { Grid, TextField, Button, Box, Snackbar, Alert } from "@mui/material";
+import { Grid, TextField, Button, Snackbar, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getUser, login } from "../../../Redux/Auth/Action";
-import { useEffect } from "react";
+import { login } from "../../../Redux/Auth/Action";
 import { useState } from "react";
+import { API_BASE_URL } from "../../../config/api";
 
 export default function LoginUserForm({ handleNext }) {
   const navigate = useNavigate();
-  const dispatch=useDispatch();
-  const jwt=localStorage.getItem("jwt");
-  const [openSnackBar,setOpenSnackBar]=useState(false);
+  const dispatch = useDispatch();
+  const [openSnackBar, setOpenSnackBar] = useState(false);
   const { auth } = useSelector((store) => store);
-  const handleCloseSnakbar=()=>setOpenSnackBar(false);
-  useEffect(()=>{
-    if(jwt){
-      dispatch(getUser(jwt))
+  const handleCloseSnackbar = () => setOpenSnackBar(false);
+  const [email, setEmail] = useState('');
+
+  const handleForgotPassword = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/forgotPassword`, {
+        method: 'POST',
+        body: JSON.stringify({ userEmail: email }),
+      });
+      if (response.ok) {
+        setOpenSnackBar(true); // Open success Snackbar
+      } else {
+        throw new Error('Failed to send reset password email');
+      }
+    } catch (error) {
+      console.error('Error sending reset password email:', error.message);
+      // Handle error and display error message to the user
     }
-  
-  },[jwt])
-  
-  
-    useEffect(() => {
-      if (auth.user || auth.error) setOpenSnackBar(true)
-    }, [auth.user]);
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    
-    const userData={
+    const userData = {
       email: data.get("email"),
       password: data.get("password"),
-     
-    }
-    console.log("login user",userData);
-  
+    };
     dispatch(login(userData));
-
   };
 
   return (
-    <React.Fragment className=" shadow-lg ">
+    <React.Fragment>
       <form className="w-full" onSubmit={handleSubmit}>
         <Grid container spacing={3}>
           <Grid item xs={12}>
@@ -51,6 +53,8 @@ export default function LoginUserForm({ handleNext }) {
               label="Email"
               fullWidth
               autoComplete="given-name"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </Grid>
           <Grid item xs={12}>
@@ -71,7 +75,7 @@ export default function LoginUserForm({ handleNext }) {
               type="submit"
               variant="contained"
               size="large"
-              sx={{padding:".8rem 0"}}
+              sx={{ padding: ".8rem 0" }}
             >
               Login
             </Button>
@@ -79,16 +83,20 @@ export default function LoginUserForm({ handleNext }) {
         </Grid>
       </form>
       <div className="flex justify-center flex-col items-center">
-         <div className="py-3 flex items-center">
-        <p className="m-0 p-0">don't have account ?</p>
-        <Button onClick={()=> navigate("/register")} className="ml-5" size="small">
-          Register
-        </Button>
+        <div className="py-3 flex items-center">
+          <Button onClick={handleForgotPassword} size="small">
+            Forgot Password
+          </Button>
+          <p className="m-0 p-0 ml-2">Forgot your password?</p>
         </div>
       </div>
-      <Snackbar open={openSnackBar} autoHideDuration={6000} onClose={handleCloseSnakbar}>
-        <Alert onClose={handleCloseSnakbar} severity="success" sx={{ width: '100%' }}>
-          {auth.error?auth.error:auth.user?"Register Success":""}
+      <Snackbar
+        open={openSnackBar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success">
+          Reset password instructions sent to your email.
         </Alert>
       </Snackbar>
     </React.Fragment>

@@ -36,7 +36,7 @@ const Routers = () => {
  {/* added */}
         <Route path="/women/jewellery/earrings" element={<ProductDetails/>}></Route>
       
-
+ 
         <Route path="/admin" element={<AdminPannel/>}></Route>
         <Route path="/demo" element={<DemoAdmin/>}></Route>
 
