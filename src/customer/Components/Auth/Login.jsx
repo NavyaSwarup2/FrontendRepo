@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../../Redux/Auth/Action";
 import { useState } from "react";
 import { API_BASE_URL } from "../../../config/api";
-
+import axios from 'axios'; // Import Axios
 export default function LoginUserForm({ handleNext }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -16,20 +16,34 @@ export default function LoginUserForm({ handleNext }) {
 
   const handleForgotPassword = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/forgotPassword`, {
-        method: 'POST',
-        body: JSON.stringify({ userEmail: email }),
+      const response = await axios.post(`http://localhost:5454/api/users/forgotPassword?userEmail=${email}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-      if (response.ok) {
-        setOpenSnackBar(true); // Open success Snackbar
+      alert("New password has been sent to" + email + " successfully." )
+      // if (response.status === 200) {
+      //   setOpenSnackBar(true); 
+      // } else {
+      //   throw new Error('Failed to send reset password email');
+      // }
+    } catch (axiosError) {
+      // Handle errors
+      if (axiosError.response) {
+        console.error(
+          "Server responded with an error:",
+          axiosError.response.data
+        );
+      } else if (axiosError.request) {
+        console.error("No response received:", axiosError.request);
       } else {
-        throw new Error('Failed to send reset password email');
+        console.error("Error setting up the request:", axiosError.message);
       }
-    } catch (error) {
-      console.error('Error sending reset password email:', error.message);
-      // Handle error and display error message to the user
+
+      // Set an error state or show an error message
     }
   };
+  
 
   const handleSubmit = (event) => {
     event.preventDefault();
